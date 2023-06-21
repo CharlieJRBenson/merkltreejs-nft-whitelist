@@ -11,7 +11,7 @@ contract DigitalPunk is ERC721AQueryable, BaseTokenURI, ReentrancyGuard {
     using Strings for uint256;
 
     uint256 public constant FEE_DENOMINATOR = 1000;
-    uint256 public constant MAX_SUPPLY = 6;
+    uint256 public constant MAX_SUPPLY = 999;
     bytes32 public merkleRoot;
 
     uint256 public totalCollectedFunds;
