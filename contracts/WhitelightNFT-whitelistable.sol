@@ -11,7 +11,7 @@ contract WhitelightNFT is ERC721AQueryable, BaseTokenURI, ReentrancyGuard {
     using Strings for uint256;
 
     uint256 public constant FEE_DENOMINATOR = 1000;
-    uint256 public constant MAX_SUPPLY = 999;
+    uint256 public constant MAX_SUPPLY = 6;
     bytes32 public merkleRoot;
 
     uint256 public totalCollectedFunds;
@@ -53,7 +53,7 @@ contract WhitelightNFT is ERC721AQueryable, BaseTokenURI, ReentrancyGuard {
         merkleRoot = _merkleRoot;
     }
 
-    function withdraw() external onlyOwner nonReentrant {
+    function withdraw() external nonReentrant {
         _withdraw(distribution1address);
         _withdraw(distribution2address);
     }
