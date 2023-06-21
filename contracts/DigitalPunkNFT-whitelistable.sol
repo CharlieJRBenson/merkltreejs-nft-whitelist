@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract WhitelightNFT is ERC721AQueryable, BaseTokenURI, ReentrancyGuard {
+contract DigitalPunk is ERC721AQueryable, BaseTokenURI, ReentrancyGuard {
     using Strings for uint256;
 
     uint256 public constant FEE_DENOMINATOR = 1000;
