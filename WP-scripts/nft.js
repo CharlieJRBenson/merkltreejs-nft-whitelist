@@ -1,12 +1,20 @@
 // CONSTANTS
-const supportedChainId = 5;
+const whitelist = false;
+const supportedChainId = 1;
 const EST_GAS = 1000000;
 const nftAbi = [{
-    "inputs": [{
-        "internalType": "uint256",
-        "name": "_mintAmount",
-        "type": "uint256"
-    }],
+    "inputs": [
+        {
+            "internalType": "uint256",
+            "name": "_mintAmount",
+            "type": "uint256"
+        },
+        {
+            "internalType": "bytes32[]",
+            "name": "merkleProof",
+            "type": "bytes32[]"
+        }
+    ],
     "name": "mint",
     "outputs": [],
     "stateMutability": "payable",
@@ -137,6 +145,11 @@ const loadToken = async () => {
     nft = new web3.eth.Contract(nftAbi, nftAddress);
 }
 
+const formatBytesArrFromDB = (str) => {
+    //remove outer '' chars then parse to array
+    return JSON.parse(str.slice(1, -1))
+}
+
 const mint = async () => {
 
     if (!account) {
@@ -148,13 +161,24 @@ const mint = async () => {
     }
     let nftPrice = await nft.methods.mintPrice().call();
     let payableAmount = (web3.utils.toBN(nftPrice)).mul(web3.utils.toBN(numberOfTokens));
+
+
+    // start get data from server
+    //let tempAccount = '0x00116Ca7c678eC102915c230070D3E2ce2de410E';
+    let merkleProof = [];
+    if (whitelist) {
+        merkleProof = formatBytesArrFromDB(await checkMerkleProof(account));
+    }
+    console.log(merkleProof);
+    // end get data from server
+
     try {
-        let txn = await nft.methods.mint(numberOfTokens).send({
+        let txn = await nft.methods.mint(numberOfTokens, merkleProof).send({
             from: account,
             value: payableAmount.toString(),
             gas: EST_GAS
         })
-        showSuccess(`Minted successfully! Check it out on <a href='https://testnets.opensea.io/account' target='_blank'>OpenSea</a>`);
+        showSuccess(`Minted successfully! Check it out on <a href='https://opensea.io/account' target='_blank'>OpenSea</a>`);
     } catch (e) {
         console.log(e);
         if (e.message.includes('User denied transaction signature')) {
@@ -218,3 +242,35 @@ $(function () {
         }
     });
 });
+
+
+/* ajax calls */
+async function checkMerkleProof(accountID) {
+
+    try {
+        var response = await fetch(whitelight_config.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: 'action=check_merkle_proof&account=' + encodeURIComponent(accountID)
+        });
+
+        if (response.ok) {
+            var data = await response.json();
+            if (data.success) {
+                var merkleValue = data.data; // The MERKLE column value
+                return merkleValue; // Return the value
+            } else {
+                var errorMessage = data.data; // The error message
+                // Handle the error message here
+                throw new Error(errorMessage); // Throw an error to be caught by the catch block
+            }
+        } else {
+            throw new Error('Error: ' + response.status);
+        }
+    } catch (error) {
+        // Handle fetch error
+        throw new Error('Fetch Error: ' + error);
+    }
+}
